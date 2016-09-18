@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <base target="_top">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="progress">
+        <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" id="convertingProgressBar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"> 60% </div>
+        <div class="progress-bar progress-bar-info progress-bar-striped active" role="progressbar" id="addingProgressBar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"> 60% </div>
+    </div>
+    <script>
+        function checkerConvertingProgressBar() {
+            function timerFct() {
+                if (document.getElementById("checkerConvertingProgressBar").style.width == '100%') {
+                    clearTimeout(timeoutHandler);
+                    document.getElementById("convertingProgressBar").innerHTML = "";
+                    checkerAddingProgressBar();
+                }
+                else {
+                    google.script.run.withSuccessHandler(updateConvertingProgressBar).progress("convert");
+                }
+            }
+            var turechange = false
+                , timeoutHandler = setInterval(timerFct, 500);
+        }
+
+        function updateConvertingProgressBar(percentage) {
+            var progressWithPercentage = percentage + '%';
+            document.getElementById('convertingProgressBar').style.width = progressWithPercentage;
+            document.getElementById("convertingProgressBar").innerHTML = progressWithPercentage;
+        }
+        checkerConvertingProgressBar();
+
+        function checkerAddingProgressBar() {
+            function timerFct() {
+                if (document.getElementById("addingProgressBar").style.width == '100%') {
+                    clearTimeout(timeoutHandler);
+                    setTimeout(function () {
+                        google.script.host.close();
+                    }, 4000);
+                }
+                else {
+                    google.script.run.withSuccessHandler(updateAddingProgressBar).progress("add");
+                }
+            }
+            var turechange = false
+                , timeoutHandler = setInterval(timerFct, 500);
+        }
+
+        function updateAddingProgressBar(percentage) {
+            var progressWithPercentage = percentage + '%';
+            document.getElementById('addingProgressBar').style.width = progressWithPercentage;
+            var progressDifference = 100 - percentage;
+            document.getElementById('convertingProgressBar').style.width = progressDifference;
+            document.getElementById("addingProgressBar").innerHTML = progressWithPercentage;
+        }
+    </script>
+</body>
+
+</html>
