@@ -4,6 +4,7 @@ function myFunction() {
     DocumentApp.getUi().showModalDialog(html, 'Preparing Document...');
     //df
     var body = DocumentApp.getActiveDocument().getBody();
+    //Empty page and set correct format and margins
     body.clear();
     body.setPageWidth(842);
     body.setPageHeight(595);
@@ -11,11 +12,13 @@ function myFunction() {
     body.setMarginBottom(28);
     body.setMarginRight(28);
     body.setMarginTop(28);
+    //Make first row
     var table = body.appendTable();
     var row = table.appendTableRow().setMinimumHeight(480);
     row.appendTableCell();
     row.appendTableCell();
     table.setColumnWidth(0, 500);
+    //Select 'Slides' folder which is in the same folder as the Google Doc
     var theDocument = DocumentApp.getActiveDocument();
     var docID = theDocument.getId();
     var theFile = DriveApp.getFileById(docID);
@@ -27,12 +30,14 @@ function myFunction() {
     //files have to be sorted alphabetically for this script to work properly
     var slides = sortFiles(files);
     for (var i = 0, len = slides.length; i < len; i++) {
+        //Insert image in first column  
         var cell = row.getCell(0);
         cell.appendImage(slides[i]);
+        //Calculate progress and set as ScriptProperty so that loading screen can read it
         var progress = i / slides.length * 100;
         PropertiesService.getScriptProperties().setProperty('convertingProgress', progress);
         Logger.log(progress);
-        //If there is another slide, prepare cells
+        //If there is another slide, prepare cells for next slide
         if (typeof slides[i + 1] !== 'undefined') {
             var row = table.appendTableRow().setMinimumHeight(480);
             row.appendTableCell();
@@ -65,7 +70,6 @@ function cloudConvertTest1() {
     //Starting the conversion
     var fileToUpload = DriveApp.getFilesByName('testpdfverymuchtest.pdf').next();
     fileToUpload.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    //ZEKER ADVANCED SERVICES INSCHAKELEN VOOR GEAVANCEERDE DRIVE API: https://developers.google.com/apps-script/guides/services/advanced
     var fileToUploadUrl = fileToUpload.getDownloadUrl();
     Logger.log(fileToUploadUrl);
     var payload = {
