@@ -3,17 +3,75 @@
 
 <head>
     <base target="_top">
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+     <?!= include('LoadingCSS'); ?>
+         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 </head>
 
 <body>
     <div class="progress">
-        <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" id="convertingProgressBar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"> 60% </div>
-        <div class="progress-bar progress-bar-info progress-bar-striped active" role="progressbar" id="addingProgressBar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"> 60% </div>
+        <div class="progress-bar progress-bar-uploading progress-bar-striped active" role="progressbar" id="progressBar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
     </div>
     <script>
-        function checkerConvertingProgressBar() {
+    function whileConvertingDoesntWork(){
+    var progressBar = $('#progressBar');
+       progressBar.removeClass('progress-bar-uploading');
+       progressBar.addClass('progress-bar-converting');
+    inserting();
+}
+    whileConvertingDoesntWork();
+
+function inserting(){
+    var progressBar = $('#progressBar');
+       progressBar.removeClass('progress-bar-converting');
+       progressBar.removeClass('progress-bar-striped');
+       progressBar.removeClass('active');
+       progressBar.addClass('progress-bar-inserting');
+       progressBar.css('width', '0%');
+var interval = setInterval(function() {
+
+    google.script.run.withSuccessHandler(updateProgress).progress();
+
+    if (progressBar.style.width >= 100) {
+        clearInterval(interval);
+    }
+}, 1000);
+}
+
+function updateProgress(width){
+    var progressBar = $('#progressBar');
+    var barWidth = Math.round(width) + "%";
+progressBar.css('width', width + '%');
+progressBar.html(barWidth);
+if (width == 100) {
+        setTimeout(function () {
+                        google.script.host.close();
+                    }, 4000);
+}
+}
+//Order of changing progress bar
+/*
+remove progress-bar-uploading
+add progress-bar-converting
+change aria-valuetext to converting...
+change div content to Converting...
+--
+remove progress-bar-converting
+remove progress-bar-striped
+remove active
+add progress-bar-inserting
+change width to 0%
+change aria-valuetext to Inserting...
+update div content
+update width
+update aria-valuenow
+*/
+    </script>
+    
+    
+    
+    
+    <script>
+       /* function checkerConvertingProgressBar() {
             function timerFct() {
                 if (document.getElementById("checkerConvertingProgressBar").style.width == '100%') {
                     clearTimeout(timeoutHandler);
@@ -58,6 +116,7 @@
             document.getElementById('convertingProgressBar').style.width = progressDifference;
             document.getElementById("addingProgressBar").innerHTML = progressWithPercentage;
         }
+        */
     </script>
 </body>
 

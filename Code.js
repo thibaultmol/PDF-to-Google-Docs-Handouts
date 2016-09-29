@@ -1,9 +1,18 @@
-function myFunction() {
+function onOpen() {
+  var ui = DocumentApp.getUi();
+  // Or DocumentApp or FormApp.
+  ui.createMenu('PDF to Handouts')
+      .addItem('Create handouts', 'mainFunction')
+  .addToUi();
+}
+
+function mainFunction() {
     //show progressbar
-    var html = HtmlService.createTemplateFromFile('loading').evaluate();
+  Logger.log("test");
+    var html = HtmlService.createTemplateFromFile('Loading').evaluate();
     DocumentApp.getUi().showModalDialog(html, 'Preparing Document...');
-    //df
     var body = DocumentApp.getActiveDocument().getBody();
+    PropertiesService.getScriptProperties().setProperty('Progress', 0);
     //Empty page and set correct format and margins
     body.clear();
     body.setPageWidth(842);
@@ -25,8 +34,16 @@ function myFunction() {
     var parents = theFile.getParents();
     var folder = parents.next();
     var slidesFolders = folder.getFoldersByName("Slides");
-    var slidesFolder = slidesFolders.next();
-    var files = slidesFolder.getFiles();
+    var slideFolder;
+  try {slideFolder = slidesFolders.next();}
+  catch (e) {DocumentApp.getUi().alert('Folder "Slides" not found! \n The folder "Slides" must be in the same folder as the current document');
+             throw ('error: Folder "Slides" not found!');}
+    var files = slideFolder.getFiles();
+  if(files.hasNext() === false)
+{
+    DocumentApp.getUi().alert('No slides are present in the "Slides" folder!');
+             throw ('error: No slides are present in the "Slides" folder!');
+}
     //files have to be sorted alphabetically for this script to work properly
     var slides = sortFiles(files);
     for (var i = 0, len = slides.length; i < len; i++) {
@@ -35,7 +52,7 @@ function myFunction() {
         cell.appendImage(slides[i]);
         //Calculate progress and set as ScriptProperty so that loading screen can read it
         var progress = i / slides.length * 100;
-        PropertiesService.getScriptProperties().setProperty('convertingProgress', progress);
+        PropertiesService.getScriptProperties().setProperty('Progress', progress);
         Logger.log(progress);
         //If there is another slide, prepare cells for next slide
         if (typeof slides[i + 1] !== 'undefined') {
@@ -44,52 +61,7 @@ function myFunction() {
             row.appendTableCell();
         };
     }
-    PropertiesService.getScriptProperties().setProperty('convertingProgress', 100);
-}
-
-function cloudConvertTest1() {
-    // Create Process ID
-    var payload = {
-        'inputformat': 'pdf'
-        , 'outputformat': 'jpg'
-    };
-    var headers = {
-        'Authorization': 'Bearer ' + 'CLOUDCONVERT API KEY'
-    };
-    var url = 'https://api.cloudconvert.com/process';
-    var options = {
-        'method': 'post'
-        , 'headers': headers
-        , 'payload': payload
-    };
-    var response = UrlFetchApp.fetch(url, options);
-    var json = response.getContentText();
-    // Receive Process URL
-    var processURL = JSON.parse(json).url;
-    Logger.log('Remaining Minutes (credits)' + JSON.parse(json).minutes);
-    //Starting the conversion
-    var fileToUpload = DriveApp.getFilesByName('testpdfverymuchtest.pdf').next();
-    fileToUpload.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    var fileToUploadUrl = fileToUpload.getDownloadUrl();
-    Logger.log(fileToUploadUrl);
-    var payload = {
-        'input': 'download'
-        , 'file': fileToUploadUrl
-        , 'outputformat': 'jpg'
-    };
-    var headers = {
-        'Authorization': 'Bearer ' + 'CLOUDCONVERT API KEY'
-    };
-    var url = 'http:' + processURL;
-    var options = {
-        'method': 'post'
-        , 'headers': headers
-        , 'payload': payload
-    };
-    var response = UrlFetchApp.fetch(url, options);
-    var json = response.getContentText();
-    // Receive Process URL
-    var processURL = JSON.parse(json).url;
+    PropertiesService.getScriptProperties().setProperty('Progress', 100);
 }
 
 function sortFiles(files) {
@@ -111,20 +83,10 @@ function sortFiles(files) {
     return data;
 }
 
-function testHTML() {
-    var html = HtmlService.createTemplateFromFile('Loading').evaluate();
-    DocumentApp.getUi().showModalDialog(html, 'Preparing Document...');
-}
-
 function include(filename) {
     return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
-function progress(type) {
-    if (type == "convert") {
-        return PropertiesService.getScriptProperties().getProperty('convertingProgress');
-    }
-    else {
-        return PropertiesService.getScriptProperties().getProperty('AddingProgress');
-    };
+function progress() {
+        return PropertiesService.getScriptProperties().getProperty('Progress');
 }
