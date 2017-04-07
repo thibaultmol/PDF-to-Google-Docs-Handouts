@@ -19,5 +19,6 @@ dpkg -s "${boostlibnames[@]}" >/dev/null 2>&1 || run_install
 ##   apt-get install imagemagick;
 ## fi
 echo "convert -verbose -density 300 etixx.pdf -quality 100 -flatten Slides/etixx-%03d.jpg"
+convert -verbose -density 260.8 Slides.pdf -quality 100 -depth 8 Slides/Slides-%03d.jpg
 convert Slides/*.jpg toOCR.pdf
 mogrify -quality 93 -resize 'x489' -bordercolor Black -border 2x2 Slides/*.jpg
