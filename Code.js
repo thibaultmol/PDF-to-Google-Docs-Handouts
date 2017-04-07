@@ -17,17 +17,25 @@ function mainFunction() {
     body.clear();
     body.setPageWidth(842);
     body.setPageHeight(595);
-    body.setMarginLeft(28);
-    body.setMarginBottom(28);
-    body.setMarginRight(28);
-    body.setMarginTop(28);
-    //Make first row
-    var table = body.appendTable();
-    var row = table.appendTableRow().setMinimumHeight(480);
-    row.appendTableCell();
-    row.appendTableCell();
-    table.setColumnWidth(0, 500);
-    //Select 'Slides' folder which is in the same folder as the Google Doc
+    body.setMarginLeft(17);
+    body.setMarginBottom(17);
+    body.setMarginRight(17);
+    body.setMarginTop(17);
+    //define formatting
+    var styleImage = {};
+    styleImage[DocumentApp.Attribute.HORIZONTAL_ALIGNMENT] =
+     DocumentApp.HorizontalAlignment.CENTER;
+    styleImage[DocumentApp.Attribute.FONT_SIZE] = 6;
+    styleImage[DocumentApp.Attribute.FOREGROUND_COLOR] = '#000000';
+    styleImage[DocumentApp.Attribute.BORDER_WIDTH] = 1;
+    styleImage[DocumentApp.Attribute.BORDER_COLOR] = '#000000';
+    var styleText = {};
+    styleText[DocumentApp.Attribute.FONT_SIZE] = 11;
+    styleText[DocumentApp.Attribute.FOREGROUND_COLOR] = '#000000';
+    var styleOCRText = {};
+    styleOCRText[DocumentApp.Attribute.FONT_SIZE] = 6;
+    styleOCRText[DocumentApp.Attribute.FOREGROUND_COLOR] = '#FFAFFF';
+    //get files
     var theDocument = DocumentApp.getActiveDocument();
     var docID = theDocument.getId();
     var theFile = DriveApp.getFileById(docID);
@@ -47,19 +55,27 @@ function mainFunction() {
     //files have to be sorted alphabetically for this script to work properly
     var slides = sortFiles(files);
     for (var i = 0, len = slides.length; i < len; i++) {
-        //Insert image in first column  
-        var cell = row.getCell(0);
-        cell.appendImage(slides[i]);
-        //Calculate progress and set as ScriptProperty so that loading screen can read it
+      var paras = body.getParagraphs();
+        if(i===0){
+          paras[0].appendInlineImage(slides[i]).getParent().setAttributes(styleImage);
+                 } else {
+                   body.appendImage(slides[i]).getParent().setAttributes(styleImage);
+                 }
+        //body.appendParagraph("").setAttributes(styleText);
         var progress = i / slides.length * 100;
         PropertiesService.getScriptProperties().setProperty('Progress', progress);
         Logger.log(progress);
         //If there is another slide, prepare cells for next slide
         if (typeof slides[i + 1] !== 'undefined') {
-            var row = table.appendTableRow().setMinimumHeight(480);
-            row.appendTableCell();
-            row.appendTableCell();
-        };
+           var comments = body.appendParagraph("");
+           comments.setAttributes(styleText);
+           body.appendPageBreak();
+          comments.getNextSibling().setAttributes(styleOCRText);
+        }
+      else {
+      body.appendParagraph("").setAttributes(styleText);
+      body.appendParagraph("").setAttributes(styleOCRText);
+      };
     }
     PropertiesService.getScriptProperties().setProperty('Progress', 100);
 }
